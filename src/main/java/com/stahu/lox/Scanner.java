@@ -83,7 +83,20 @@ public class Scanner {
             case '/':
                 if (match('/')) {
                     // A comment goes until the end of the line.
-                    while (peek() != '\n' && !isAtEnd()) advance();
+                    while (peek() != '\n' && !isAtEnd()) {
+                        advance();
+                    }
+                } else if (match('*')) {
+                    // Extended comment goes until "*/"
+                    while (peek() != '*' && peekNext() != '/' && !isAtEnd()) {
+                        if (peek() == '\n') {
+                            line++;
+                        }
+                        advance();
+                    }
+                    for (int k = 0; k < 2 && !isAtEnd(); k++) {
+                        advance();
+                    }
                 } else {
                     addToken(SLASH);
                 }
