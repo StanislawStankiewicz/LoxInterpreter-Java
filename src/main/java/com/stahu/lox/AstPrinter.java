@@ -28,13 +28,19 @@ public class AstPrinter implements Expression.Visitor<String>{
 
     private String parenthesize(String name, Expression... expressions) {
         StringBuilder builder = new StringBuilder();
+        builder.append("(");
 
-        for (Expression expression : expressions) {
-            builder.append(expression.accept(this));
-            builder.append(" ");
-        }
+        // Append the operator name first (this is usually for unary operations)
         builder.append(name);
 
-        return builder.toString();
+        // Iterate through the expressions to form the infix notation
+        for (Expression expression : expressions) {
+            builder.append(" ");
+            builder.append(expression.accept(this));
         }
+
+        builder.append(")");
+
+        return builder.toString();
+    }
 }
