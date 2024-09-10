@@ -3,6 +3,7 @@ package com.stahu.lox;
 import com.stahu.lox.model.Token;
 import com.stahu.lox.model.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.stahu.lox.model.TokenType.*;
@@ -19,89 +20,108 @@ class Parser {
         this.tokens = tokens;
     }
 
-    Expression parse() {
-        try {
-            return expression();
-        } catch (ParseError e) {
-            return null;
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+        return statements;
     }
 
-    private Expression expression() {
+    private Expr expression() {
         return equality();
     }
 
-    private Expression equality() {
-        Expression expression = comparison();
+    private Stmt statement() {
+        if (match(PRINT)) {
+            return printStatement();
+        }
+        return expressionStatement();
+    }
+
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
+    }
+
+    private Expr equality() {
+        Expr expr = comparison();
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
             Token operator = previous();
-            Expression right = comparison();
-            expression = new Expression.Binary(expression, operator, right);
+            Expr right = comparison();
+            expr = new Expr.Binary(expr, operator, right);
         }
-        return expression;
+        return expr;
     }
 
-    private Expression comparison() {
-        Expression expr = term();
+    private Expr comparison() {
+        Expr expr = term();
 
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
             Token operator = previous();
-            Expression right = term();
-            expr = new Expression.Binary(expr, operator, right);
+            Expr right = term();
+            expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
     }
 
-    private Expression term() {
-        Expression expr = factor();
+    private Expr term() {
+        Expr expr = factor();
 
         while (match(MINUS, PLUS)) {
             Token operator = previous();
-            Expression right = factor();
-            expr = new Expression.Binary(expr, operator, right);
+            Expr right = factor();
+            expr = new Expr.Binary(expr, operator, right);
         }
 
         return expr;
     }
 
-    private Expression factor() {
-        Expression expr = unary();
+    private Expr factor() {
+        Expr expr = unary();
 
         while (match(SLASH, STAR)) {
             Token operator = previous();
-            Expression right = unary();
-            expr = new Expression.Binary(expr, operator, right);
+            Expr right = unary();
+            expr = new Expr.Binary(expr, operator, right);
         }
 
         return expr;
     }
 
-    private Expression unary() {
+    private Expr unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
-            Expression right = unary();
-            return new Expression.Unary(operator, right);
+            Expr right = unary();
+            return new Expr.Unary(operator, right);
         }
 
         return primary();
     }
 
-    private Expression primary() {
+    private Expr primary() {
         if (match(FALSE))
-            return new Expression.Literal(false);
+            return new Expr.Literal(false);
         if (match(TRUE))
-            return new Expression.Literal(true);
+            return new Expr.Literal(true);
         if (match(NIL))
-            return new Expression.Literal(null);
+            return new Expr.Literal(null);
 
         if (match(NUMBER, STRING)) {
-            return new Expression.Literal(previous().literal());
+            return new Expr.Literal(previous().literal());
         }
         if (match(LEFT_PAREN)) {
-            Expression expr = expression();
+            Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
-            return new Expression.Grouping(expr);
+            return new Expr.Grouping(expr);
         }
         throw error(peek(), "Expect expression.");
     }

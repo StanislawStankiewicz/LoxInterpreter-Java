@@ -1,32 +1,32 @@
 package com.stahu.lox;
 
-public class AstPrinter implements Expression.Visitor<String>{
-    String print(Expression expr) {
+public class AstPrinter implements Expr.Visitor<String>{
+    String print(Expr expr) {
         return expr.accept(this);
     }
 
     @Override
-    public String visitBinaryExpression(Expression.Binary expression) {
+    public String visitBinaryExpression(Expr.Binary expression) {
         return parenthesize(expression.operator().lexeme(), expression.left(), expression.right());
     }
 
     @Override
-    public String visitGroupingExpression(Expression.Grouping expression) {
-        return parenthesize("group", expression.expression());
+    public String visitGroupingExpression(Expr.Grouping expression) {
+        return parenthesize("group", expression.expr());
     }
 
     @Override
-    public String visitLiteralExpression(Expression.Literal expression) {
+    public String visitLiteralExpression(Expr.Literal expression) {
         if (expression.value() == null) return "nil";
         return expression.value().toString();
     }
 
     @Override
-    public String visitUnaryExpression(Expression.Unary expression) {
+    public String visitUnaryExpression(Expr.Unary expression) {
         return parenthesize(expression.operator().lexeme(), expression.right());
     }
 
-    private String parenthesize(String name, Expression... expressions) {
+    private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
         builder.append("(");
 
@@ -34,9 +34,9 @@ public class AstPrinter implements Expression.Visitor<String>{
         builder.append(name);
 
         // Iterate through the expressions to form the infix notation
-        for (Expression expression : expressions) {
+        for (Expr expr : exprs) {
             builder.append(" ");
-            builder.append(expression.accept(this));
+            builder.append(expr.accept(this));
         }
 
         builder.append(")");

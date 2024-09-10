@@ -2,7 +2,7 @@ package com.stahu.lox;
 
 import com.stahu.lox.model.Token;
 
-interface Expression {
+interface Expr {
     interface Visitor<R> {
         R visitBinaryExpression(Binary expression);
         R visitGroupingExpression(Grouping expression);
@@ -12,28 +12,28 @@ interface Expression {
 
     <R> R accept(Visitor<R> visitor);
 
-    record Binary(Expression left, Token operator, Expression right) implements Expression {
+    record Binary(Expr left, Token operator, Expr right) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpression(this);
         }
     }
 
-    record Grouping(Expression expression) implements Expression {
+    record Grouping(Expr expr) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitGroupingExpression(this);
         }
     }
 
-    record Literal(Object value) implements Expression {
+    record Literal(Object value) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitLiteralExpression(this);
         }
     }
 
-    record Unary(Token operator, Expression right) implements Expression {
+    record Unary(Token operator, Expr right) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnaryExpression(this);

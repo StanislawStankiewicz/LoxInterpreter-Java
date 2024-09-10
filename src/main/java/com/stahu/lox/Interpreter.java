@@ -3,19 +3,22 @@ package com.stahu.lox;
 import com.stahu.lox.error.RuntimeError;
 import com.stahu.lox.model.Token;
 
-class Interpreter implements Expression.Visitor<Object> {
+import java.util.List;
 
-    void interpret(Expression expression) {
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
+
+    void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
 
     @Override
-    public Object visitBinaryExpression(Expression.Binary expression) {
+    public Object visitBinaryExpression(Expr.Binary expression) {
         Object left = evaluate(expression.left());
         Object right = evaluate(expression.right());
 
@@ -73,17 +76,17 @@ class Interpreter implements Expression.Visitor<Object> {
     }
 
     @Override
-    public Object visitGroupingExpression(Expression.Grouping expression) {
-        return evaluate(expression.expression());
+    public Object visitGroupingExpression(Expr.Grouping expression) {
+        return evaluate(expression.expr());
     }
 
     @Override
-    public Object visitLiteralExpression(Expression.Literal expression) {
+    public Object visitLiteralExpression(Expr.Literal expression) {
         return expression.value();
     }
 
     @Override
-    public Object visitUnaryExpression(Expression.Unary expression) {
+    public Object visitUnaryExpression(Expr.Unary expression) {
         Object right = evaluate(expression.right());
 
         return switch (expression.operator().type()) {
@@ -133,7 +136,24 @@ class Interpreter implements Expression.Visitor<Object> {
         return object.toString();
     }
 
-    private Object evaluate(Expression expr) {
+    private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression());
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression());
+        System.out.println(stringify(value));
+        return null;
     }
 }
