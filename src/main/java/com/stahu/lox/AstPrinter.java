@@ -6,33 +6,38 @@ public class AstPrinter implements Expr.Visitor<String>{
     }
 
     @Override
-    public String visitBinaryExpression(Expr.Binary expression) {
+    public String visitBinaryExpr(Expr.Binary expression) {
         return parenthesize(expression.operator().lexeme(), expression.left(), expression.right());
     }
 
     @Override
-    public String visitGroupingExpression(Expr.Grouping expression) {
+    public String visitGroupingExpr(Expr.Grouping expression) {
         return parenthesize("group", expression.expr());
     }
 
     @Override
-    public String visitLiteralExpression(Expr.Literal expression) {
+    public String visitLiteralExpr(Expr.Literal expression) {
         if (expression.value() == null) return "nil";
         return expression.value().toString();
     }
 
     @Override
-    public String visitUnaryExpression(Expr.Unary expression) {
-        return parenthesize(expression.operator().lexeme(), expression.right());
-    }
-
-    @Override
-    public String visitVariableExpression(Expr.Variable expression) {
+    public String visitLogicalExpr(Expr.Logical expression) {
         return "";
     }
 
     @Override
-    public String visitAssignExpression(Expr.Assign expression) {
+    public String visitUnaryExpr(Expr.Unary expression) {
+        return parenthesize(expression.operator().lexeme(), expression.right());
+    }
+
+    @Override
+    public String visitVariableExpr(Expr.Variable expression) {
+        return "";
+    }
+
+    @Override
+    public String visitAssignExpr(Expr.Assign expression) {
         return "";
     }
 

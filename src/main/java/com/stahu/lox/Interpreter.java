@@ -2,6 +2,7 @@ package com.stahu.lox;
 
 import com.stahu.lox.error.RuntimeError;
 import com.stahu.lox.model.Token;
+import com.stahu.lox.model.TokenType;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitBinaryExpression(Expr.Binary expression) {
+    public Object visitBinaryExpr(Expr.Binary expression) {
         Object left = evaluate(expression.left());
         Object right = evaluate(expression.right());
 
@@ -77,17 +78,29 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitGroupingExpression(Expr.Grouping expression) {
+    public Object visitGroupingExpr(Expr.Grouping expression) {
         return evaluate(expression.expr());
     }
 
     @Override
-    public Object visitLiteralExpression(Expr.Literal expression) {
+    public Object visitLiteralExpr(Expr.Literal expression) {
         return expression.value();
     }
 
     @Override
-    public Object visitUnaryExpression(Expr.Unary expression) {
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        Object left = evaluate(expr.left());
+
+        if (expr.operator().type() == TokenType.OR) {
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+        return evaluate(expr.right());
+    }
+
+    @Override
+    public Object visitUnaryExpr(Expr.Unary expression) {
         Object right = evaluate(expression.right());
 
         return switch (expression.operator().type()) {
@@ -102,7 +115,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitVariableExpression(Expr.Variable expr) {
+    public Object visitVariableExpr(Expr.Variable expr) {
         return environment.get(expr.name());
     }
 
@@ -118,7 +131,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private boolean isTruthy(Object object) {
         if (object == null) return false;
-        if (object instanceof Boolean) return (boolean)object;
+        if (object instanceof Boolean bool) return bool;
         return true;
     }
 
@@ -176,6 +189,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        if (isTruthy(evaluate(stmt.condition()))) {
+            execute(stmt.thenBranch());
+        } else if (stmt.elseBranch() != null) {
+            execute(stmt.elseBranch());
+        }
+        return null;
+    }
+
+    @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
         Object value = evaluate(stmt.expression());
         System.out.println(stringify(value));
@@ -193,7 +216,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitAssignExpression(Expr.Assign expr) {
+    public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value());
         environment.assign(expr.name(), value);
         return value;

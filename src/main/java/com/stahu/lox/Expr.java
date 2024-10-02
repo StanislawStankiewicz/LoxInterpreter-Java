@@ -2,16 +2,15 @@ package com.stahu.lox;
 
 import com.stahu.lox.model.Token;
 
-import java.util.List;
-
 interface Expr {
     interface Visitor<R> {
-        R visitBinaryExpression(Binary expression);
-        R visitGroupingExpression(Grouping expression);
-        R visitLiteralExpression(Literal expression);
-        R visitUnaryExpression(Unary expression);
-        R visitVariableExpression(Variable expression);
-        R visitAssignExpression(Assign expression);
+        R visitBinaryExpr(Binary expression);
+        R visitGroupingExpr(Grouping expression);
+        R visitLiteralExpr(Literal expression);
+        R visitLogicalExpr(Logical expression);
+        R visitUnaryExpr(Unary expression);
+        R visitVariableExpr(Variable expression);
+        R visitAssignExpr(Assign expression);
     }
 
     <R> R accept(Visitor<R> visitor);
@@ -19,42 +18,49 @@ interface Expr {
     record Binary(Expr left, Token operator, Expr right) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitBinaryExpression(this);
+            return visitor.visitBinaryExpr(this);
         }
     }
 
     record Grouping(Expr expr) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitGroupingExpression(this);
+            return visitor.visitGroupingExpr(this);
         }
     }
 
     record Literal(Object value) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitLiteralExpression(this);
+            return visitor.visitLiteralExpr(this);
+        }
+    }
+
+    record Logical(Expr left, Token operator, Expr right) implements Expr {
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLogicalExpr(this);
         }
     }
 
     record Unary(Token operator, Expr right) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitUnaryExpression(this);
+            return visitor.visitUnaryExpr(this);
         }
     }
 
     record Variable(Token name) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitVariableExpression(this);
+            return visitor.visitVariableExpr(this);
         }
     }
 
     record Assign(Token name, Expr value) implements Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitAssignExpression(this);
+            return visitor.visitAssignExpr(this);
         }
     }
 }
