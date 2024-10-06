@@ -11,6 +11,7 @@ interface Stmt {
         R visitPrintStmt(Print stmt);
         R visitVarStmt(Var stmt);
         R visitBlockStmt(Block stmt);
+        R visitWhileStmt(While stmt);
     }
 
     <R> R accept(Visitor<R> visitor);
@@ -40,6 +41,13 @@ interface Stmt {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitVarStmt(this);
+        }
+    }
+
+    record While(Expr condition, Stmt body) implements Stmt {
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitWhileStmt(this);
         }
     }
 
