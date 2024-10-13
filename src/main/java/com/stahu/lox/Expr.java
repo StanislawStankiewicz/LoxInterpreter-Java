@@ -2,9 +2,12 @@ package com.stahu.lox;
 
 import com.stahu.lox.model.Token;
 
+import java.util.List;
+
 interface Expr {
     interface Visitor<R> {
         R visitBinaryExpr(Binary expression);
+        R visitCallExpr(Call expression);
         R visitGroupingExpr(Grouping expression);
         R visitLiteralExpr(Literal expression);
         R visitLogicalExpr(Logical expression);
@@ -19,6 +22,13 @@ interface Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpr(this);
+        }
+    }
+
+    record Call(Expr callee, Token paren, List<Expr> arguments) implements Expr {
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCallExpr(this);
         }
     }
 
